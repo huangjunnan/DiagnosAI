@@ -39,6 +39,7 @@ env/
 Thumbs.db
 
 # ==================== Local History 插件 ====================
+.lh/
 .history/
 
 # ==================== 日志与报告 ====================
@@ -62,3 +63,4 @@ docker-compose.override.yml
 # 临时文件
 tmp/
 temp/
+.lh/

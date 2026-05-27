@@ -1,4 +1,6 @@
 
+# DiagnosAI
+
 feature/perf-tool — 新增 Perf 诊断工具
 
 feature/gdb-tool — 新增 GDB 死锁检测
@@ -27,3 +29,7 @@ git checkout develop && git merge feature/cpu-diagnose
 git checkout main && git merge develop
 git tag v0.2.0
 git push origin main --tags
+
+history112222333333322222222222223333333333333
+11111111111111
+22222222222

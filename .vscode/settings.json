@@ -1,66 +1,14 @@
 {
-    // ==================== 文件自动保存 ====================
-    // 切换文件或失去焦点时自动保存，确保 Local History 能捕获每一次改动
-    "files.autoSave": "onFocusChange",
-    // ==================== Local History 插件 ====================
-    // 存储路径（默认 .history，建议保留以便团队识别）
-    "local-history.path": ".history",
-    // 保留历史天数（建议 60 天，覆盖完整的开发周期）
-    "local-history.maxFileHistory": 60,
-    // 排除规则：避免追踪非项目文件及 Windows 全局配置
-    "local-history.exclude": [
-        "**/.history/**",
-        "**/node_modules/**",
-        "**/build/**",
-        "*.log",
-        "c:/Users/**",
-        "C:/Users/**",
-        // 还可排除其他绝对路径的临时文件
-        "/tmp/**",
-        "/mnt/c/**"
-    ],
-    // 保存时立即记录（0 延迟）
-    "local-history.saveDelay": 0,
-    // 自动清理过期历史（可选，默认开启）
-    "local-history.autoClean": true,
-    // 在时间线视图中显示本地历史（需要 VSCode 1.66+）
-    "local-history.showInTimeline": true,
-    // 文件大小限制（单位 KB，超过不记录，避免大文件撑爆磁盘）
-    "local-history.maxFileSize": 1024,
-    // ==================== 文件监视排除 ====================
-    "files.watcherExclude": {
-        "**/.history/**": true,
-        "**/build/**": true
-    },
-    // ==================== 搜索排除 ====================
-    "search.exclude": {
-        "**/.history": true,
-        "**/build": true
-    },
-    // ==================== Git 相关 ====================
-    // 在 .gitignore 中已经忽略 .history，这里确保 Git 不会追踪该目录
-    "git.ignoreLimitWarning": true,
-    // 启用 Git 自动拉取（可选）
-    "git.autofetch": true,
-    // ==================== 编辑器通用设置 ====================
-    // 缩进与空格（C++/Python 均适用）
-    "editor.tabSize": 4,
-    "editor.insertSpaces": true,
-    "editor.renderWhitespace": "boundary",
-    // 行尾自动修剪空白（保持代码整洁）
-    "files.trimTrailingWhitespace": true,
-    // 文件末尾保留一个空行
-    "files.insertFinalNewline": true,
-    // 统一换行符
-    "files.eol": "\n",
-    // ==================== C++ 扩展建议 ====================
-    // 若安装 C/C++ 扩展，可设置标准
-    "C_Cpp.default.cppStandard": "c++17",
-    "C_Cpp.default.includePath": [
-        "${workspaceFolder}/local_agent/include",
-        "${workspaceFolder}/local_agent/lib"
-    ],
-    // ==================== Python 扩展建议 ====================
-    // 若安装 Python 扩展，可设置解释器路径（WSL2 中通常为 python3）
-    "python.defaultInterpreterPath": "/usr/bin/python3"
+  "local-history.exclude": [
+    "**/*.log",
+    "**/build/**",
+    "**/__pycache__/**",
+    "**/.lh/**",
+    "**/.history/**",
+    "**/*.env"
+  ],
+  "files.autoSave": "onFocusChange",
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "files.eol": "\n"
 }
