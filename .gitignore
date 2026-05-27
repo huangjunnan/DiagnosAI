@@ -1,0 +1,26 @@
+# 编译输出
+build/
+*.o
+*.a
+*.so
+local_agent_bin
+test_app_bin
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# 日志和报告
+*.log
+ai_diagnosis_report.md
+
+# Docker（若需保留则删除相关行）
+# docker-compose.override.yml
+
+# 环境变量（包含密钥）
+.env
