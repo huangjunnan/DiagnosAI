@@ -1,26 +1,64 @@
-# 编译输出
+# ==================== C++ 编译与构建产物 ====================
 build/
 *.o
+*.obj
+*.exe
+*.out
 *.a
 *.so
+*.so.*
+*.dylib
+*.dll
+
+# 可执行文件（C++ 本地代理与测试程序）
 local_agent_bin
 test_app_bin
 
-# IDE
-.vscode/
-.idea/
+# CMake 生成目录
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.cmake
 
-# Python
+# ==================== Python ====================
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+dist/
+*.egg
 .venv/
+venv/
+env/
 
-# 日志和报告
+# ==================== IDE 与编辑器 ====================
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ==================== Local History 插件 ====================
+.history/
+
+# ==================== 日志与报告 ====================
 *.log
+*.gz              # heaptrack 生成的数据文件，避免入库
 ai_diagnosis_report.md
+reports/
 
-# Docker（若需保留则删除相关行）
-# docker-compose.override.yml
+# ==================== Docker ====================
+# 避免提交包含密钥的 override 文件
+docker-compose.override.yml
+# 排除 Docker 构建上下文中的不必要文件
+.dockerignore
 
-# 环境变量（包含密钥）
+# ==================== 环境变量与密钥 ====================
 .env
+*.pem
+*.key
+
+# ==================== 其他 ====================
+# 临时文件
+tmp/
+temp/
