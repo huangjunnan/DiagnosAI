@@ -163,3 +163,19 @@ Fork 本仓库
 打开一个 Pull Request
 📄 许可证
 本项目采用 MIT 许可证 - 详见 LICENSE 文件。
+
+
+这个错误非常常见且完全正常：feature/perf-tool 是你在本地创建的新分支，还没有推送到远程仓库，所以 Git 不知道它应该跟踪哪个远程分支。
+一步到位的完整操作
+bash
+运行
+# 1. 先切换到develop分支，拉取最新代码（确保你的功能分支基于最新代码）
+git checkout develop
+git pull origin develop
+
+# 2. 切回你的功能分支，合并最新的develop代码（避免后续冲突）
+git checkout feature/perf-tool
+git merge develop
+
+# 3. 将本地分支推送到远程，并自动设置上游跟踪
+git push -u origin feature/perf-tool

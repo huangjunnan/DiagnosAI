@@ -79,7 +79,7 @@ run-agent: venv
 
 dev: venv
 	@echo "⚡ Starting proxy in background..."
-	@cd $(PROXY_BUILD) && ./diagnostic-proxy &
+	@$(ROOT_DIR)/$(PROXY_BUILD)/diagnostic-proxy &
 	@sleep 1
 	@echo "🤖 Running Agent..."
 	@cd $(ROOT_DIR) && $(VENV_PYTHON) -m agent.main; \
@@ -110,10 +110,22 @@ docker-login:
 	docker login $(DOCKER_REGISTRY) -u $(DOCKER_NAMESPACE)
 
 # ===================== 清理 =====================
+# 普通清理（保留工具链和 Docker 镜像）
 clean:
 	@echo "🧹 Cleaning build artifacts..."
 	rm -rf $(PROXY_SRC)/build $(TEST_SRC)/build .lh
 	rm -rf $(VENV_DIR)
+
+# 彻底清理：包括临时文件、Docker 镜像等
+clean-all: clean
+	@echo "🧹 Cleaning everything..."
+	rm -rf /tmp/diagnosai_heaptrack.gz   # heaptrack 临时输出
+	rm -rf $(ROOT_DIR)/ai_diagnosis_report.md   # 生成的报告
+	# 停止并删除所有相关 Docker 容器和镜像（如果需要）
+	-docker stop $(docker ps -q --filter ancestor=$(DEPLOY_IMAGE)) 2>/dev/null || true
+	-docker rmi $(DEPLOY_IMAGE) $(TOOLCHAIN_IMAGE) 2>/dev/null || true
+	-docker system prune -f --filter "label=diagnosai"
+	@echo "✅ 所有构建产物、虚拟环境、临时文件和 Docker 镜像已清除。"
 
 # ===================== 帮助 =====================
 help:
@@ -130,6 +142,7 @@ help:
 	@echo "  make run-agent               运行 AI Agent (使用虚拟环境)"
 	@echo "  make dev                     开发模式（后台代理+Agent）"
 	@echo "  make clean                   清理构建产物和虚拟环境"
+	@echo "  make clean-all               彻底清理（包括 Docker 镜像和临时文件）"
 	@echo ""
 	@echo "🐳 Docker 部署 (容器仅用于最终部署):"
 	@echo "  make docker-toolchain        准备工具链镜像"
