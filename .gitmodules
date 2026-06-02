@@ -1,0 +1,6 @@
+[submodule "diagnostic-proxy/lib/httplib"]
+	path = diagnostic-proxy/lib/httplib
+	url = git@github.com:yhirose/cpp-httplib.git
+[submodule "diagnostic-proxy/lib/json"]
+	path = diagnostic-proxy/lib/json
+	url = git@github.com:nlohmann/json.git

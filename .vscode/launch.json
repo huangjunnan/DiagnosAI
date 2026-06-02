@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug diagnostic-proxy",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/diagnostic-proxy/build/diagnostic-proxy",
+            "cwd": "${workspaceFolder}",
+            "args": [],
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "stopAtEntry": false,
+            "externalConsole": false,
+            "preLaunchTask": "build-proxy" // 可选，自动编译
+        },
+        {
+            "name": "Python: Agent",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/agent/main.py",
+            "console": "integratedTerminal",
+            "env": {
+                "OPENAI_API_KEY": "sk-..."
+            }
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+    "name": "DiagnosAI Dev",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "dev",
+    "workspaceFolder": "/workspace",
+    "extensions": [
+        "xpo.local-history",
+        "ms-vscode.cpptools",
+        "ms-python.python"
+    ],
+    "settings": {
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "files.autoSave": "onFocusChange",
+        "local-history.exclude": [
+            "**/*.log",
+            "**/build/**",
+            "**/__pycache__/**"
+        ]
+    },
+    "remoteUser": "root"
+}

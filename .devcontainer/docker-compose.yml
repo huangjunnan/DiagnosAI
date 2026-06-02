@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  dev:
+    image: ghcr.io/huangjunnan/diagnosai-toolchain:latest
+    command: sleep infinity
+    volumes:
+      - ..:/workspace:cached
+      - ~/.gitconfig:/root/.gitconfig:ro
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    network_mode: "host"
+    # 可以指定 user 为当前用户 uid 来解决权限问题（WSL2 中通常 uid=1000）
+    # user: "1000:1000"

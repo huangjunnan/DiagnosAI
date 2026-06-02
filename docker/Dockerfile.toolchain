@@ -1,0 +1,40 @@
+# docker/Dockerfile.toolchain
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 1. 安装 Clang、Ninja、CMake、Python 及诊断工具
+RUN apt-get update && apt-get install -y \
+    clang \
+    lldb \
+    ninja-build \
+    cmake \
+    build-essential \
+    gdb \
+    heaptrack \
+    libc6-dbg \
+    python3 \
+    python3-venv \
+    python3-pip \
+    supervisor \
+    curl \
+    wget \
+    git \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2. 设置 Python 虚拟环境
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# 3. 安装 Python 依赖（requirements.txt 需要提前放在 docker 目录下）
+COPY agent/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm /tmp/requirements.txt
+
+# 4. 设置默认编译器为 Clang，默认构建工具为 Ninja
+ENV CC=clang
+ENV CXX=clang++
+ENV CMAKE_GENERATOR=Ninja
+
+WORKDIR /workspace
