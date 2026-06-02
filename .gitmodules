@@ -4,3 +4,6 @@
 [submodule "diagnostic-proxy/lib/json"]
 	path = diagnostic-proxy/lib/json
 	url = git@github.com:nlohmann/json.git
+[submodule "diagnostic-proxy/lib/spdlog"]
+	path = diagnostic-proxy/lib/spdlog
+	url = https://github.com/gabime/spdlog.git
