@@ -192,11 +192,15 @@ clean:
 	@if [ -n "$(VENV_DIR)" ]; then \
 		rm -rf $(VENV_DIR) 2>/dev/null; \
 	fi
+	@echo "🧹 清理 /tmp 下的 DiagnosAI 临时文件..."
+	@rm -f /tmp/diagnosai_heaptrack_* /tmp/diagnosai_gperf_*
 
 clean-all: clean
 	@echo "🧹 正在清理所有内容..."
 	@rm -rf /tmp/diagnosai_heaptrack.gz 2>/dev/null
 	@rm -rf $(ROOT_DIR)/reports/* 2>/dev/null
+	@echo "🧹 清理 /tmp 下的 DiagnosAI 临时文件..."
+	@rm -f /tmp/diagnosai_heaptrack_* /tmp/diagnosai_gperf_*
 	@echo "✅ 所有构建工件、虚拟环境、临时文件已清除。"
 
 # ===================== 帮助 =====================

@@ -1,17 +1,33 @@
 agent:
+  log_level: "INFO"
   proxy_url: "http://localhost:8080"
-  log_level: "DEBUG"   # 默认是 INFO ，设为 DEBUG 可查看原始诊断数据
+  diagnostics:
+    mode: "concurrent"          # once | concurrent | incremental
+    max_workers: 4
+    history_dir: "./diagnostic_history"
+    growth_threshold: 0.1
   model:
-    provider: "deepseek"
-    api_key_env: "OPENAI_API_KEY"     # 从环境变量读取
+    api_key_env: "OPENAI_API_KEY"
     base_url: "https://api.deepseek.com"
     model_name: "deepseek-chat"
     temperature: 0.1
-    max_tokens: 4096
-    timeout: 120
-    context_length_limit: 16000  # 注入 LLM 的报告最大字符数
-    prompt_template: |
-      你是 C++ 性能专家。根据下面的诊断数据，直接输出一个 JSON 对象（不要包含任何 markdown 标记，不要 ```json，只输出纯 JSON 字符串），格式如下：
+    context_length_limit: 16000
+    memory_prompt_template: |
+      你是 C++ 内存诊断专家。请严格按照下面的步骤分析，不要跳过任何一步。
+
+      **分析步骤**：
+      1. 列出 heaptrack 报告中所有未释放的调用栈，按泄漏量从大到小排序。
+      2. 对每个调用栈，回答以下问题：
+         a. 分配者是什么函数/类？（从调用栈中提取）
+         b. 分配了多少次？是否随时间持续增长？（从报告的 alloc count 和 peak 判断）
+         c. 根据上面的“业务生命周期规则”，这个分配属于哪个业务实体？预期何时释放？
+         d. 实际是否在预期时机释放了？如果没有，原因是什么？
+      3. 根据以上分析，为每个泄漏点打上 category：
+         - "true_leak": 应该释放但未释放，且内存持续增长。
+         - "long_lived": 符合业务生命周期的正常常驻内存。
+         - "system_overhead": 系统库内部开销，不是泄漏。
+         - "uncertain": 无法确定，需要人工判断。
+      4. 输出 JSON，格式如下：
       {{
         "memory_leak": {{
           "exists": true/false,
@@ -21,31 +37,47 @@ agent:
               "function": "函数名",
               "location": "文件:行号",
               "leaked_bytes": 数字,
+              "alloc_count": 数字,
+              "growth_trend": "stable|growing|unknown",
+              "expected_life": "预期生命周期（根据业务规则）",
+              "actual_behavior": "实际观察到的行为",
+              "category": "true_leak|long_lived|system_overhead|uncertain",
               "cause": "原因（一句话）",
               "fix": "修复建议（一句话）"
             }}
           ]
-        }},
+        }}
+      }}
+      输出纯 JSON，不要 Markdown。
+
+      诊断数据：
+      {report_text}
+
+    cpu_prompt_template: |
+      你是 C++ 性能分析专家。根据下面的 gperf/perf 报告，输出一个 JSON 对象，格式如下：
+      {{
         "cpu_hotspots": [
           {{
             "function": "函数名",
             "location": "文件:行号",
             "cpu_percent": 数字,
+            "likely_user_code": "如果热点在第三方库，推测的用户调用点",
             "suggestion": "优化建议（一句话）"
           }}
         ]
       }}
-      如果某个分析项没有发现问题（例如无内存泄漏），对应的字段设为空值（如 "memory_leak": {{ "exists": false }}）。
-
+      如果热点函数在第三方库，请根据函数名和调用模式推断最可能的用户调用点，并写在 likely_user_code 字段。
+      输出纯 JSON，不要任何 Markdown 标记。
       诊断数据：
       {report_text}
+  targets:
+    - "./tests/build/Debug/memory_leak"
+    - "./tests/build/Debug/cpu_hotspin"
   target:
-    # program: "./tests/build/Debug/tests"              # 本地路径
-    # program: "/app/tests/tests" # 容器里的路径
-     program: "./tests/build/Debug/cpu_hotspin"
+    program: ""
   tools:
-    enabled: ["heaptrack", "gperf"] #  "perf",
+    enabled: ["heaptrack", "gperf"]
   report:
-    format: "markdown"
-    include_raw: true   # 在报告中附带原始诊断数据
+    format: "json"
     output_dir: "./reports"
+    include_raw: false

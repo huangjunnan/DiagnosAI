@@ -1,0 +1,44 @@
+# ============================================================
+# DiagnosAI 业务生命周期配置
+# 告诉 AI：哪些内存分配是“跟着什么走的”
+# ============================================================
+
+# ----- 业务实体定义 -----
+# key: 用于匹配调用栈中函数名/类名的正则表达式
+# value: 该实体的内存预期何时释放
+entities:
+  # 程序全局常驻（程序退出才释放）
+  "AppConfig|SysLog|Logger|Singleton|Global": "ProgramExit"
+
+  # 用户会话维度（用户登出时释放）
+  "UserSession|UserCtx|Account|BizModel": "UserLogout"
+
+  # 网络连接维度（连接断开时释放）
+  "TcpConn|TcpSession|HttpSession|Channel|RpcClient": "ConnClose"
+
+  # 请求维度（请求处理完释放）
+  "Request|RpcMsg|HttpReq|ReqCtx": "RequestFinish"
+
+  # 任务维度（任务执行完释放）
+  "Task|Job|Worker|Batch": "TaskFinish"
+
+  # 缓存/池（程序常驻，有上限，不会无限增长）
+  "Cache|LRU|Pool|Buffer": "ProgramExit"
+
+# ----- 系统白名单（永远不算泄漏） -----
+white_list:
+  - "__GI__IO_file_doallocate"        # stdout 缓冲区
+  - "_dl_init|call_init"              # 动态链接器初始化
+  - "std::ios_base::Init"             # iostream 初始化
+  - "spdlog::"                        # 日志库全局资源
+  - "__cxa_allocate_exception"        # 异常分配（临时）
+  - "std::string::_Rep::_S_create"    # 短字符串 SSO
+
+# ----- 判定阈值 -----
+thresholds:
+  # 内存增长率超过此值视为“持续增长”（单位：比率/秒）
+  growth_rate: 0.05
+  # 同一调用栈分配超过此次数且持续增长，视为可疑
+  suspicious_alloc_count: 10
+  # 系统开销最大字节数（超过此值不再视为系统开销）
+  system_overhead_max_bytes: 102400   # 100 KB
