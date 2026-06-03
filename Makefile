@@ -78,13 +78,25 @@ run-agent: venv
 	@cd $(ROOT_DIR) && $(VENV_PYTHON) -m agent.main
 
 dev: venv
-	@echo "⚡ Starting proxy in background..."
-	@$(ROOT_DIR)/$(PROXY_BUILD)/diagnostic-proxy &
-	@sleep 1
-	@echo "🤖 Running Agent..."
-	@cd $(ROOT_DIR) && $(VENV_PYTHON) -m agent.main; \
-		echo "🛑 Stopping proxy..."; \
-		pkill diagnostic-proxy 2>/dev/null || true
+	@echo "🛑 正在停止旧代理进程..."
+	-@pkill -f "$(PROXY_BUILD)/diagnostic-proxy" 2>/dev/null || true
+	@sleep 0.5
+	@echo "⚡ 启动新代理（工作目录=$(ROOT_DIR)）"
+	@cd $(ROOT_DIR) && $(PROXY_BUILD)/diagnostic-proxy & \
+		PROXY_PID=$$!; \
+		echo "代理 PID: $$PROXY_PID"; \
+		sleep 2; \
+		if ! kill -0 $$PROXY_PID 2>/dev/null; then \
+			echo "❌ 代理启动失败！"; \
+			exit 1; \
+		fi; \
+		echo "🤖 运行 AI Agent..."; \
+		export OPENAI_API_KEY="sk-cf4b3acbdc3e4a9a8291cd53cd4ff0af"; \
+		cd $(ROOT_DIR) && $(VENV_PYTHON) -m agent.main; \
+		AGENT_EXIT_CODE=$$?; \
+		echo "🛑 诊断结束，停止代理..."; \
+		kill $$PROXY_PID 2>/dev/null || true; \
+		exit $$AGENT_EXIT_CODE
 
 # ===================== Docker 部署（容器仅用于最后部署） =====================
 docker-toolchain:
