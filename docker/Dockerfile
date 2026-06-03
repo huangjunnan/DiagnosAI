@@ -1,24 +1,35 @@
-FROM ubuntu:22.04
-ENV DEBIAN_FRONTEND=noninteractive
+ARG TOOLCHAIN_IMAGE=ghcr.io/huangjunnan/diagnosai-toolchain:latest
 
-RUN apt-get update && apt-get install -y \
-    build-essential cmake gdb heaptrack libc6-dbg \
-    python3 python3-pip supervisor curl \
-    && rm -rf /var/lib/apt/lists/*
+# ---------- 第一阶段：编译 ----------
+FROM ${TOOLCHAIN_IMAGE} AS builder
+COPY . /workspace
+RUN git submodule update --init --recursive 2>/dev/null || true
+
+# 编译 C++ 代理和测试程序（利用工具链中的 Clang+Ninja）
+RUN cd diagnostic-proxy && mkdir build && cd build && \
+    cmake .. && cmake --build . --parallel $(nproc) && \
+    cp diagnostic-proxy /workspace/proxy
+
+RUN cd tests && mkdir build && cd build && \
+    cmake .. && cmake --build . --parallel $(nproc) && \
+    cp tests /workspace/tests
+
+# ---------- 第二阶段：运行环境（直接复用工具链镜像） ----------
+FROM ${TOOLCHAIN_IMAGE} AS runtime
 
 WORKDIR /app
 
-# 复制源码并构建 C++ 代理
-COPY diagnostic-proxy/ ./diagnostic-proxy/
-RUN cd diagnostic-proxy && mkdir build && cd build && cmake .. && make -j$(nproc) && cp diagnostic-proxy /app/proxy
+# 创建与开发环境一致的目录结构并复制二进制
+COPY --from=builder /workspace/tests /app/tests
+RUN chmod +x /app/tests
 
-# 复制 Python Agent
-COPY agent/ ./agent/
-RUN pip3 install -r agent/requirements.txt
+# 同样处理代理二进制（如果需要）
+COPY --from=builder /workspace/proxy /app/proxy
+RUN chmod +x /app/proxy
 
-# 复制测试程序
-COPY test_app/ ./test_app/
-RUN cd test_app && mkdir build && cd build && cmake .. && make -j$(nproc) && cp test_app /app/test_app_bin
+# 复制 Python Agent 源码和配置
+COPY --from=builder /workspace/agent /app/agent
+COPY --from=builder /workspace/config /app/config
 
 # Supervisor 配置
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf

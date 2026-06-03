@@ -1,6 +1,7 @@
 """
 Markdown 格式报告生成器。
 """
+
 from typing import Any, Dict
 from agent.core.interfaces import Reporter
 

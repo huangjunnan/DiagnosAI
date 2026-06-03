@@ -1,6 +1,6 @@
 agent:
   proxy_url: "http://localhost:8080"
-  log_level: "INFO"   # 默认是 INFO ，设为 DEBUG 可查看原始诊断数据
+  log_level: "DEBUG"   # 默认是 INFO ，设为 DEBUG 可查看原始诊断数据
   model:
     provider: "deepseek"
     api_key_env: "OPENAI_API_KEY"     # 从环境变量读取
@@ -11,19 +11,40 @@ agent:
     timeout: 120
     context_length_limit: 16000  # 注入 LLM 的报告最大字符数
     prompt_template: |
-      你是一个资深的 C++ 性能专家，下面是一份或多份诊断工具的输出报告。
-      请综合分析并回答以下问题：
-      1. 程序是否存在内存泄漏？依据是什么？
-      2. 如果存在，泄漏规模有多大？（估算字节数）
-      3. 最可能的泄漏原因是什么？（给出调用栈或代码位置）
-      4. 提供具体的修复建议。
+      你是 C++ 性能专家。根据下面的诊断数据，直接输出一个 JSON 对象（不要包含任何 markdown 标记，不要 ```json，只输出纯 JSON 字符串），格式如下：
+      {{
+        "memory_leak": {{
+          "exists": true/false,
+          "total_leaked_bytes": 数字,
+          "leak_points": [
+            {{
+              "function": "函数名",
+              "location": "文件:行号",
+              "leaked_bytes": 数字,
+              "cause": "原因（一句话）",
+              "fix": "修复建议（一句话）"
+            }}
+          ]
+        }},
+        "cpu_hotspots": [
+          {{
+            "function": "函数名",
+            "location": "文件:行号",
+            "cpu_percent": 数字,
+            "suggestion": "优化建议（一句话）"
+          }}
+        ]
+      }}
+      如果某个分析项没有发现问题（例如无内存泄漏），对应的字段设为空值（如 "memory_leak": {{ "exists": false }}）。
 
-      诊断报告：
+      诊断数据：
       {report_text}
   target:
-    program: "./test_app/build/Debug/test_app"              # 可通过命令行覆盖
+    # program: "./tests/build/Debug/tests"              # 本地路径
+    # program: "/app/tests/tests" # 容器里的路径
+     program: "./tests/build/Debug/cpu_hotspin"
   tools:
-    enabled: ["heaptrack", "perf"]
+    enabled: ["heaptrack", "gperf"] #  "perf",
   report:
     format: "markdown"
     include_raw: true   # 在报告中附带原始诊断数据

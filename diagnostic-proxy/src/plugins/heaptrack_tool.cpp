@@ -1,14 +1,17 @@
 #include "plugins/heaptrack_tool.h"
+
+#include <unistd.h>
+
+#include <array>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <memory>
-#include <array>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
-#include <filesystem>
-#include <unistd.h>
 #include <vector>
+
 #include "logger.h"
 
 DEFINE_MODULE_LOG(heaptrack_tool)
@@ -16,12 +19,12 @@ DEFINE_MODULE_LOG(heaptrack_tool)
 namespace
 {
 
-    std::string execCommand(const std::string &cmd)
+    std::string execCommand(const std::string& cmd)
     {
         L_TRACE("执行命令: {}", cmd);
-        std::array<char, 128> buffer;
+        std::array<char, 128> buffer {};
         std::string result;
-        FILE *pipe = popen(cmd.c_str(), "r");
+        FILE* pipe = popen(cmd.c_str(), "r");
         if (!pipe)
         {
             L_ERROR("popen 失败: {}", cmd);
@@ -74,22 +77,22 @@ namespace
 
 } // anonymous namespace
 
-std::string HeaptrackTool::execute(
-    const std::string &target,
-    const std::unordered_map<std::string, std::string> & /*params*/)
+std::string HeaptrackTool::execute(const std::string& target,
+                                   const std::unordered_map<std::string, std::string>& /*params*/)
 {
-
     L_INFO("Heaptrack 诊断开始，目标: {}", target);
 
     const std::string outputBase = getUniqueTempPrefix();
 
     // RAII 自动清理临时文件（无论正常返回还是抛出异常）
-    auto cleaner = std::shared_ptr<void>(nullptr, [outputBase](...)
+    auto cleaner = std::shared_ptr<void>(nullptr,
+                                         [outputBase](...)
                                          {
-        std::error_code ec;
-        std::filesystem::remove(outputBase, ec);
-        std::filesystem::remove(outputBase + ".gz", ec);
-        std::filesystem::remove(outputBase + ".gz.gz", ec); });
+                                             std::error_code ec;
+                                             std::filesystem::remove(outputBase, ec);
+                                             std::filesystem::remove(outputBase + ".gz", ec);
+                                             std::filesystem::remove(outputBase + ".gz.gz", ec);
+                                         });
 
     // 执行 heaptrack
     std::string heaptrackCmd = "heaptrack -o " + outputBase + " \"" + target + "\"";
@@ -97,12 +100,9 @@ std::string HeaptrackTool::execute(
     execCommand(heaptrackCmd);
 
     // 查找实际输出文件（兼容不同版本 heaptrack 的文件名）
-    const std::vector<std::string> possibleFiles = {
-        outputBase + ".gz.gz",
-        outputBase + ".gz",
-        outputBase};
+    const std::vector<std::string> possibleFiles = {outputBase + ".gz.gz", outputBase + ".gz", outputBase};
     std::string actualFile;
-    for (const auto &file : possibleFiles)
+    for (const auto& file : possibleFiles)
     {
         if (std::filesystem::exists(file))
         {
@@ -126,7 +126,7 @@ std::string HeaptrackTool::execute(
     return result;
 }
 
-std::string HeaptrackTool::parseResult(const std::string &rawOutput)
+std::string HeaptrackTool::parseResult(const std::string& rawOutput)
 {
     L_DEBUG("Heaptrack 解析输入大小: {} 字节", rawOutput.size());
     return rawOutput;

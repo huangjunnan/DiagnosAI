@@ -1,0 +1,51 @@
+# .clang-tidy 配置文件（生产级优化版）
+# 全局禁用所有不适用的规则集
+Checks: >
+  *
+  -fuchsia-*
+  -altera-*
+  -llvmlibc-*
+  -abseil-*
+  -android-*
+  -boost-*
+  -bugprone-*
+  -cert-*
+  -concurrency-*
+  -cppcoreguidelines-*
+  -darwin-*
+  -google-*
+  -hicpp-*
+  -linuxkernel-*
+  -llvm-*
+  -misc-*
+  -modernize-*
+  -mpi-*
+  -objc-*
+  -openmp-*
+  -performance-*
+  -portability-*
+  -readability-*
+  -zircon-*
+  # 只启用以下核心检查规则
+  +bugprone-*
+  -bugprone-implicit-widening-of-multiplication-result
+  +cert-err58-cpp
+  +cppcoreguidelines-avoid-non-const-global-variables
+  +cppcoreguidelines-pro-type-member-init
+  +cppcoreguidelines-pro-type-vararg
+  +misc-const-correctness
+  +misc-include-cleaner
+  +performance-avoid-endl
+  +performance-avoid-endl
+  +readability-implicit-bool-conversion
+  +readability-qualified-auto
+
+# 开发阶段禁用警告视为错误（CI环境可通过命令行覆盖）
+WarningsAsErrors: ''
+
+# 为 DEFINE_MODULE_LOG 宏产生的静态对象豁免检查
+CheckOptions:
+  - key: cert-err58-cpp.WarnOnStaticObjectConstruction
+    value: '0'
+  - key: misc-include-cleaner.IgnoreHeaders
+    value: 'spdlog/.*;nlohmann/json.hpp;httplib.h'

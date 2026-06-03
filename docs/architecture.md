@@ -31,7 +31,7 @@ DiagnosAI/
 │   │   └── heaptrack_tool.py
 │   ├── main.py
 │   └── requirements.txt
-├── test_app/
+├── tests/
 │   ├── main.cpp
 │   └── CMakeLists.txt
 ├── docker/

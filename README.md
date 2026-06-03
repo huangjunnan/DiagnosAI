@@ -24,7 +24,7 @@ DiagnosAI/
 │   ├── core/            # 核心框架
 │   ├── plugins/         # 分析器插件
 │   └── tools/           # 工具客户端
-├── test_app/            # 测试用例程序
+├── tests/            # 测试用例程序
 ├── docker/              # Docker 部署文件
 └── Makefile             # 统一构建系统
 🚀 快速开始

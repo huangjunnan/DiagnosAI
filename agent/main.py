@@ -3,6 +3,7 @@
 DiagnosAI Agent 入口。
 负责加载配置、初始化插件、执行诊断并生成报告。
 """
+
 import os
 import sys
 import logging
@@ -14,6 +15,7 @@ from agent.tools.heaptrack_tool import HeaptrackTool
 from agent.tools.perf_tool import PerfTool
 from agent.plugins.analyzers.llm_analyzer import LLMAnalyzer
 from agent.plugins.reporters.md_reporter import MarkdownReporter
+from agent.tools.gperf_tool import GperfTool
 
 
 def setup_logging(level: str = "INFO") -> None:
@@ -40,7 +42,8 @@ def get_tool_class(name: str):
     """工具名称到类的映射"""
     tool_map = {
         "heaptrack": HeaptrackTool,
-        "perf": PerfTool,
+        # "perf": PerfTool,
+        "gperf": GperfTool,
     }
     if name not in tool_map:
         raise ValueError(f"未知工具: {name}")

@@ -1,8 +1,10 @@
 #pragma once
-#include "interfaces/idiagnostic_tool.h"
 #include <memory>
 
-class LocalProxyServer {
+#include "interfaces/idiagnostic_tool.h"
+
+class LocalProxyServer
+{
 public:
     explicit LocalProxyServer(std::shared_ptr<ToolRegistry> registry);
     void start(int port);

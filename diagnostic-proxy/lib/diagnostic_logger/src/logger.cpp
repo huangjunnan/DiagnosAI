@@ -1,19 +1,21 @@
 #include "logger.h"
-#include <fstream>
-#include <stdexcept>
-#include <unordered_map>
-#include <vector>
-#include <nlohmann/json.hpp>
+
 #include <spdlog/async.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <stdexcept>
+#include <unordered_map>
+#include <vector>
 
 using json = nlohmann::json;
 
 namespace diagnostic_logger
 {
 
-    static spdlog::level::level_enum str_to_level(const std::string &s)
+    static spdlog::level::level_enum str_to_level(const std::string& s)
     {
         if (s == "trace")
             return spdlog::level::trace;
@@ -32,7 +34,7 @@ namespace diagnostic_logger
         return spdlog::level::info; // 默认
     }
 
-    void init(const std::string &config_path)
+    void init(const std::string& config_path)
     {
         std::ifstream ifs(config_path);
         if (!ifs)
@@ -41,8 +43,8 @@ namespace diagnostic_logger
         }
 
         json config = json::parse(ifs);
-        const auto &proxy = config.at("proxy");
-        const auto &log_cfg = proxy.at("log");
+        const auto& proxy = config.at("proxy");
+        const auto& log_cfg = proxy.at("log");
 
         // 默认级别
         spdlog::level::level_enum default_level = str_to_level(log_cfg.value("default_level", "info"));
@@ -51,7 +53,7 @@ namespace diagnostic_logger
         std::unordered_map<std::string, spdlog::level::level_enum> logger_levels;
         if (log_cfg.contains("loggers"))
         {
-            for (const auto &[name, level_str] : log_cfg["loggers"].items())
+            for (const auto& [name, level_str] : log_cfg["loggers"].items())
             {
                 logger_levels[name] = str_to_level(level_str.get<std::string>());
             }
@@ -68,7 +70,7 @@ namespace diagnostic_logger
         size_t max_files = 5;
         if (log_cfg.contains("sinks") && log_cfg["sinks"].contains("file"))
         {
-            const auto &file_sink_cfg = log_cfg["sinks"]["file"];
+            const auto& file_sink_cfg = log_cfg["sinks"]["file"];
             if (file_sink_cfg.value("enabled", true))
             {
                 log_path = file_sink_cfg.value("path", log_path);
@@ -85,11 +87,10 @@ namespace diagnostic_logger
 
         // 创建预定义的 logger
         std::vector<std::string> names = {"main", "server", "heaptrack_tool", "perf_tool"};
-        for (const auto &name : names)
+        for (const auto& name : names)
         {
             auto logger = std::make_shared<spdlog::async_logger>(
-                name, sinks.begin(), sinks.end(),
-                spdlog::thread_pool(), spdlog::async_overflow_policy::block);
+                name, sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
             auto it = logger_levels.find(name);
             logger->set_level(it != logger_levels.end() ? it->second : default_level);
             logger->flush_on(spdlog::level::warn);
@@ -104,15 +105,14 @@ namespace diagnostic_logger
         else
         {
             auto tmp = std::make_shared<spdlog::async_logger>(
-                "default", sinks.begin(), sinks.end(),
-                spdlog::thread_pool(), spdlog::async_overflow_policy::block);
+                "default", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
             tmp->set_level(default_level);
             spdlog::register_logger(tmp);
             spdlog::set_default_logger(tmp);
         }
     }
 
-    std::shared_ptr<spdlog::logger> get_logger(const std::string &name)
+    std::shared_ptr<spdlog::logger> get_logger(const std::string& name)
     {
         auto logger = spdlog::get(name);
         return logger ? logger : spdlog::default_logger();
